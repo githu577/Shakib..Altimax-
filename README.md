@@ -1,122 +1,86 @@
-<div align="center">
+<p align="center">
+  <img src="https://i.imgur.com/RMT8Tgj.jpeg"
+       width="150"
+       height="150"
+       style="border-radius: 50%; border: 4px solid #7000ff; box-shadow: 0px 0px 35px rgba(112, 0, 255, 0.8);"
+       alt="SAKIB" />
+</p>
 
-<img src="https://i.ibb.co/kgZJtxfQ/e921af1d9c8a.jpg" alt="GoatBot-Shakib" width="700" />
+<h1 align="center">
+  <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=700&size=32&duration=3000&pause=500&color=7000FF&center=true&vCenter=true&width=500&lines=SAKIB'S-GOAT-BOT-V3;The+Greatest+Of+All+Time;Next+Gen+Automation"
+       alt="Typing Animation" />
+</h1>
 
-<br/>
-<br/>
+<p align="center">
+  <img src="https://img.shields.io/badge/Version-V3.0-blueviolet?style=for-the-badge&logo=github" />
+  <img src="https://img.shields.io/badge/Maintained%3F-Yes-green?style=for-the-badge&logo=github" />
+  <img src="https://img.shields.io/badge/Build-Passing-brightgreen?style=for-the-badge&logo=github-actions" />
+  <img src="https://img.shields.io/badge/Node.js-%3E%3D20.x-339933?style=for-the-badge&logo=node.js&logoColor=white" />
+  <img src="https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge&logo=opensource" />
+</p>
 
-<img src="https://readme-typing-svg.herokuapp.com?font=JetBrains+Mono&weight=700&size=18&duration=3000&pause=800&color=00FFD1&center=true&vCenter=true&width=700&lines=GoatBot-Shakib;Facebook+Messenger+Bot+Framework;Built+on+Goat+Bot+V2+%E2%80%94+Modified+by+Shakib;Fast+%E2%80%A2+Smart+%E2%80%A2+Reliable+%E2%80%A2+Powerful" />
+<p align="center">
+  <b>🔥 The Ultimate Multi-Functional Automation Bot System for Facebook Messenger</b>
+  <br>
+  <i>High-performance, scalable, and built for next-generation automation.</i>
+</p>
 
-<br/>
-<br/>
+<p align="center">
+  <a href="https://github.com/">
+    <img src="https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white" />
+  </a>
 
-![Version](https://img.shields.io/badge/Version-2.0.0-00FFD1?style=for-the-badge&logo=github&logoColor=black)
-![Node](https://img.shields.io/badge/Node.js-20.x-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)
-![Base](https://img.shields.io/badge/Based_on-Goat_Bot_V2-FF6B6B?style=for-the-badge&logo=github&logoColor=white)
-![Modified](https://img.shields.io/badge/Modified_by-Shakib-9B59B6?style=for-the-badge&logo=github&logoColor=white)
-
-</div>
-
----
-
-# ◈ About
-
-Assalamu Alaikum! 👋
-
-**GoatBot-Shakib** is a customized and modified version of
-[Goat Bot V2](https://github.com/ntkhang03/Goat-Bot-V2).
-
-This project is maintained and customized by **Shakib**, with custom
-commands, improvements, configuration changes, and additional features.
-
-| Feature | Description |
-|---|---|
-| 🔌 **Messenger Support** | Facebook Messenger bot framework |
-| ⚙️ **Command System** | Custom command and event handling |
-| 🌐 **Multi-Language** | Multiple language support depending on configuration |
-| 🎨 **Custom UI** | Clean and formatted bot responses |
-| 🛡️ **Admin System** | Bot-admin and group-admin permissions |
-| 🔧 **Settings** | Configure important bot settings through commands |
-| 📦 **Custom Commands** | Easily add your own commands |
-| ⚡ **Fast & Powerful** | Designed for flexible Messenger automation |
-
-> ⚠️ This project is provided for educational and development purposes.
-> Use it responsibly and follow Facebook/Meta's applicable rules.
+  <a href="https://www.facebook.com/">
+    <img src="https://img.shields.io/badge/Facebook-1877F2?style=for-the-badge&logo=facebook&logoColor=white" />
+  </a>
+</p>
 
 ---
 
-# ◈ Preview
+## 👨‍💻 Lead Developer
 
-<div align="center">
+### **Sakib**
 
-<img src="https://i.ibb.co/kgZJtxfQ/e921af1d9c8a.jpg" alt="GoatBot-Shakib Preview" width="700" />
+**Full Stack Developer | API Developer | Bot Systems Developer**
 
-<br/>
-<br/>
-
-### 🐐 GoatBot-Shakib
-
-**Facebook Messenger Bot Framework**
-
-</div>
+> Passionate about building powerful automation systems, Messenger bots, APIs, and modern JavaScript applications.
 
 ---
 
-# ◈ Support
+## 🚀 Key Highlights
 
-<div align="center">
+| ⚡ Blazing Fast | 🖥️ Integrated Dashboard | 🌍 Global Support |
+| :---: | :---: | :---: |
+| Core engine optimized for minimal latency & high concurrency. | Real-time monitoring & configuration through a modern Web UI. | Multi-language architecture ready for global deployment. |
 
-[![Messenger Group](https://img.shields.io/badge/Join%20Messenger%20Group-0084FF?style=for-the-badge&logo=messenger&logoColor=white)](YOUR_MESSENGER_GROUP_LINK)
-
-[![Facebook](https://img.shields.io/badge/Facebook-1877F2?style=for-the-badge&logo=facebook&logoColor=white)](YOUR_FACEBOOK_LINK)
-
-[![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white)](YOUR_GITHUB_LINK)
-
-[![YouTube](https://img.shields.io/badge/YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](YOUR_YOUTUBE_LINK)
-
-[![Telegram](https://img.shields.io/badge/Telegram-0088CC?style=for-the-badge&logo=telegram&logoColor=white)](YOUR_TELEGRAM_LINK)
-
-[![Instagram](https://img.shields.io/badge/Instagram-E4405F?style=for-the-badge&logo=instagram&logoColor=white)](YOUR_INSTAGRAM_LINK)
-
-</div>
+| 🛡️ Secure Architecture | 📦 Modular Design | 📊 Advanced Analytics |
+| :---: | :---: | :---: |
+| Designed with stability and reliability in mind. | Easily extend functionality with custom commands & events. | Detailed logging for monitoring performance & interactions. |
 
 ---
 
-# ◈ Credits
+## 🛠️ Built With
 
-| Role | Person | Link |
-|---|---|---|
-| 🏆 **Original Creator** | NTKhang | [Goat Bot V2](https://github.com/ntkhang03/Goat-Bot-V2) |
-| 🔧 **Modified & Maintained By** | Shakib | [My GitHub](YOUR_GITHUB_LINK) |
+<p align="left">
 
-> Original Goat Bot V2 credits and license belong to their respective
-> original authors. This repository contains modifications and custom
-> work by **Shakib**.
+<img src="https://img.shields.io/badge/Node.js-339933?style=flat-square&logo=nodedotjs&logoColor=white" />
 
----
+<img src="https://img.shields.io/badge/JavaScript-F7DF1E?style=flat-square&logo=javascript&logoColor=black" />
 
-# ◈ Setup Tutorial
+<img src="https://img.shields.io/badge/JSON-000000?style=flat-square&logo=json&logoColor=white" />
 
-<div align="center">
+<img src="https://img.shields.io/badge/Git-F05032?style=flat-square&logo=git&logoColor=white" />
 
-### 📹 Watch Before You Start
+<img src="https://img.shields.io/badge/npm-CB3837?style=flat-square&logo=npm&logoColor=white" />
 
-<a href="YOUR_TUTORIAL_LINK">
-<img src="YOUR_TUTORIAL_THUMBNAIL" alt="GoatBot-Shakib Tutorial" width="680" />
-</a>
-
-<br/>
-<br/>
-
-[![Watch Tutorial](https://img.shields.io/badge/▶%20Watch%20Setup%20Tutorial-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](YOUR_TUTORIAL_LINK)
-
-</div>
+</p>
 
 ---
 
-# ◈ Setup
+# ⚙️ Installation & Setup
 
-### Clone the repository
+## 1️⃣ Clone the Repository
 
 ```bash
-git clone YOUR_GITHUB_REPOSITORY_URL
+git clone YOUR-GITHUB-REPOSITORY
+cd SAKIB-GOAT-BOT-V3
