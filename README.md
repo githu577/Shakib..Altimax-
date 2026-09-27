@@ -1,19 +1,21 @@
+<div align="center">
+
 <p align="center">
-  <img src="https://i.imgur.com/RMT8Tgj.jpeg"
-       width="150"
-       height="150"
-       style="border-radius: 50%; border: 4px solid #7000ff; box-shadow: 0px 0px 35px rgba(112, 0, 255, 0.8);"
-       alt="SAKIB" />
+  <img src="https://i.ibb.co/gMhYvhqg/43038de4a811.jpg"
+       width="170"
+       height="170"
+       alt="SAKIB"
+       style="border-radius:50%; border:4px solid #7000ff; box-shadow:0px 0px 35px rgba(112,0,255,0.8);" />
 </p>
 
 <h1 align="center">
-  <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=700&size=32&duration=3000&pause=500&color=7000FF&center=true&vCenter=true&width=500&lines=SAKIB'S-GOAT-BOT-V3;The+Greatest+Of+All+Time;Next+Gen+Automation"
+  <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=700&size=32&duration=3000&pause=500&color=7000FF&center=true&vCenter=true&width=650&lines=SAKIB'S-GOAT-BOT-V3;The+Greatest+Of+All+Time;Next+Gen+Automation"
        alt="Typing Animation" />
 </h1>
 
 <p align="center">
   <img src="https://img.shields.io/badge/Version-V3.0-blueviolet?style=for-the-badge&logo=github" />
-  <img src="https://img.shields.io/badge/Maintained%3F-Yes-green?style=for-the-badge&logo=github" />
+  <img src="https://img.shields.io/badge/Maintained-Yes-green?style=for-the-badge&logo=github" />
   <img src="https://img.shields.io/badge/Build-Passing-brightgreen?style=for-the-badge&logo=github-actions" />
   <img src="https://img.shields.io/badge/Node.js-%3E%3D20.x-339933?style=for-the-badge&logo=node.js&logoColor=white" />
   <img src="https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge&logo=opensource" />
@@ -35,19 +37,23 @@
   </a>
 </p>
 
+</div>
+
 ---
 
-## 👨‍💻 Lead Developer
+# 👨‍💻 Lead Developer
 
-### **Sakib**
+<div align="center">
+
+## 💜 SAKIB
 
 **Full Stack Developer | API Developer | Bot Systems Developer**
 
-> Passionate about building powerful automation systems, Messenger bots, APIs, and modern JavaScript applications.
+</div>
 
 ---
 
-## 🚀 Key Highlights
+# 🚀 Key Highlights
 
 | ⚡ Blazing Fast | 🖥️ Integrated Dashboard | 🌍 Global Support |
 | :---: | :---: | :---: |
@@ -59,7 +65,7 @@
 
 ---
 
-## 🛠️ Built With
+# 🛠️ Built With
 
 <p align="left">
 
