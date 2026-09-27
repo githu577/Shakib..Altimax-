@@ -1,119 +1,104 @@
+const { loadImage, createCanvas } = require("canvas");
 const fs = require("fs-extra");
 const axios = require("axios");
-const { loadImage, createCanvas } = require("canvas");
+const path = require("path");
 
 module.exports = {
   config: {
     name: "hack",
-    version: "1.0.0",
-    author: "NAZRUL (Converted by Akash)",
-    countDown: 0,
+    version: "2.5",
+    author: "xalman",
+    countDown: 5,
     role: 0,
-    shortDescription: "Fake FB hack generator 😅",
-    longDescription: "Creates a fake hacking style image using target profile photo and name.",
-    category: "fun",
-    guide: {
-      en: "{pn} @mention বা reply দিয়ে ব্যবহার করো"
+    shortDescription: { en: "Generates a hacking image with profile picture" },
+    longDescription: { en: "Creates a hacking-themed image with user's avatar" },
+    category: "FUN & SOCIAL",
+    guide: { en: "{pn} @mention/reply/uid - Generate hacking image" }
+  },
+
+  onStart: async function ({ api, event, args, message }) {
+    const { threadID, messageID, senderID, mentions, type, messageReply } = event;
+
+    let targetID;
+    if (type === "message_reply") {
+      targetID = messageReply.senderID;
+    } else if (Object.keys(mentions).length > 0) {
+      targetID = Object.keys(mentions)[0];
+    } else if (args.length > 0 && !isNaN(args[0])) {
+      targetID = args[0];
+    } else {
+      targetID = senderID;
     }
-  },
 
-  // ✏️ টেক্সট লাইন ভাঙার হেল্পার ফাংশন
-  wrapText(ctx, text, maxWidth) {
-    return new Promise(resolve => {
-      if (ctx.measureText(text).width < maxWidth) return resolve([text]);
-      if (ctx.measureText("W").width > maxWidth) return resolve(null);
-
-      const words = text.split(" ");
-      const lines = [];
-      let line = "";
-
-      while (words.length > 0) {
-        let split = false;
-        while (ctx.measureText(words[0]).width >= maxWidth) {
-          const temp = words[0];
-          words[0] = temp.slice(0, -1);
-          if (split) {
-            words[1] = temp.slice(-1) + words[1];
-          } else {
-            split = true;
-            words.splice(1, 0, temp.slice(-1));
-          }
-        }
-
-        if (ctx.measureText(line + words[0]).width < maxWidth) {
-          line += words.shift() + " ";
-        } else {
-          lines.push(line.trim());
-          line = "";
-        }
-
-        if (words.length === 0) lines.push(line.trim());
-      }
-
-      resolve(lines);
-    });
-  },
-
-  // 🎯 মূল কমান্ড
-  onStart: async function ({ event, message, usersData }) {
     try {
-      const mentionID = Object.keys(event.mentions)[0] || event.senderID;
-      const userName = await usersData.getName(mentionID);
+      const userInfo = await api.getUserInfo(targetID);
+      const name = userInfo[targetID]?.name || "Unknown";
 
-      // ব্যাকগ্রাউন্ড লিংক (তুমি চাইলে নিজেও কাস্টম দিতে পারো)
-      const backgrounds = [
-        "https://drive.google.com/uc?id=1_S9eqbx8CxMMxUdOfATIDXwaKWMC-8ox&export=download"
-      ];
-      const bgLink = backgrounds[Math.floor(Math.random() * backgrounds.length)];
+      api.setMessageReaction("⏳", messageID, () => {}, true);
 
-      // ক্যাশ ফোল্ডার তৈরি
-      const bgPath = __dirname + "/cache/hack_bg.png";
-      const avatarPath = __dirname + "/cache/hack_avatar.png";
+      const avatarUrl = `https://graph.facebook.com/${targetID}/picture?width=512&height=512&access_token=6628568379%7Cc1e620fa708a1d5696fb991c1bde5662`;
+      const templateUrl = "https://i.ibb.co/LXNX3QRW/2b38355a3b01.jpg";
 
-      // প্রোফাইল ছবি নামানো
-      const avatarData = (
-        await axios.get(
-          `https://graph.facebook.com/${mentionID}/picture?width=720&height=720&access_token=6628568379%7Cc1e620fa708a1d5696fb991c1bde5662`,
-          { responseType: "arraybuffer" }
-        )
-      ).data;
-      fs.writeFileSync(avatarPath, Buffer.from(avatarData, "utf-8"));
+      const [avatarBuf, templateBuf] = await Promise.all([
+        axios.get(avatarUrl, { responseType: "arraybuffer" }),
+        axios.get(templateUrl, { responseType: "arraybuffer" })
+      ]);
 
-      // ব্যাকগ্রাউন্ড নামানো
-      const bgData = (await axios.get(bgLink, { responseType: "arraybuffer" })).data;
-      fs.writeFileSync(bgPath, Buffer.from(bgData, "utf-8"));
+      const avatarImg = await loadImage(avatarBuf.data);
+      const templateImg = await loadImage(templateBuf.data);
 
-      // ক্যানভাসে আঁকা
-      const background = await loadImage(bgPath);
-      const avatar = await loadImage(avatarPath);
-      const canvas = createCanvas(background.width, background.height);
+      const canvas = createCanvas(templateImg.width, templateImg.height);
       const ctx = canvas.getContext("2d");
 
-      ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
-      ctx.font = "400 23px Arial";
-      ctx.fillStyle = "#1878F3";
-      ctx.textAlign = "start";
+      ctx.drawImage(templateImg, 0, 0, canvas.width, canvas.height);
 
-      const wrappedText = await this.wrapText(ctx, userName, 1160);
-      ctx.fillText(wrappedText.join("\n"), 136, 335);
+      const x = 150;
+      const y = 280;
+      const size = 180;
 
+      ctx.save();
       ctx.beginPath();
-      ctx.drawImage(avatar, 57, 290, 66, 68);
+      ctx.arc(x + size / 2, y + size / 2, size / 2, 0, Math.PI * 2, true);
+      ctx.closePath();
+      ctx.clip();
+      ctx.drawImage(avatarImg, x, y, size, size);
+      ctx.restore();
 
-      const finalBuffer = canvas.toBuffer();
-      fs.writeFileSync(bgPath, finalBuffer);
+      const cacheDir = path.join(__dirname, "cache");
+      if (!fs.existsSync(cacheDir)) fs.mkdirSync(cacheDir, { recursive: true });
+      const filePath = path.join(cacheDir, `hack_${Date.now()}.png`);
+      fs.writeFileSync(filePath, canvas.toBuffer());
 
-      await message.reply({
-        body: "😎 হ্যাক সম্পূর্ণ!",
-        attachment: fs.createReadStream(bgPath)
-      });
+      const statusMsg = await api.sendMessage("💻 Initializing hack...", threadID);
 
-      // ক্যাশ পরিষ্কার করা
-      fs.unlinkSync(bgPath);
-      fs.unlinkSync(avatarPath);
+      const hackSteps = [
+        "> ACCESSING DATABASE...",
+        "> DECRYPTING FILES...",
+        "> BYPASSING FIREWALL...",
+        "> SYSTEM BREACHED"
+      ];
+
+      for (const step of hackSteps) {
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        await api.editMessage(`💻 Hacking in progress...\n\n${step}`, statusMsg.messageID);
+      }
+
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      await api.editMessage("✅ Hack complete! Sending proof...", statusMsg.messageID);
+
+      api.setMessageReaction("✅", messageID, () => {}, true);
+
+      return api.sendMessage({
+        body: `💻 ${name} has been hacked!`,
+        attachment: fs.createReadStream(filePath)
+      }, threadID, () => {
+        if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+      }, messageID);
+
     } catch (err) {
-      console.error(err);
-      message.reply("❌ কিছু ভুল হয়েছে!");
+      console.error("Hack command error:", err);
+      api.setMessageReaction("❌", messageID, () => {}, true);
+      return message.reply("❌ Failed to generate hacking image.");
     }
   }
 };

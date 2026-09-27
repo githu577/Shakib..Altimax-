@@ -3,115 +3,59 @@ const moment = require("moment-timezone");
 module.exports = {
   config: {
     name: "age",
-    aliases: ["myage"],
-    version: "6.0",
-    author: "𝐌𝐨𝐡𝐚ᴍᴍᴀᴅ 𝐀ᴋᴀsʜ",
+    version: "4.0.",
+    author: "Amit max//xalman",
+    countDown: 5,
     role: 0,
-    category: "AI",
-    guide: "age <YYYY | DD/MM/YYYY | D Month YYYY | D/Month/YYYY>",
-    countDown: 5
+    shortDescription: "Age Checker",
+    longDescription: "View age stats details.",
+    category: "utility",
+    guide: { en: "{pn} [DD-MM-YYYY]" }
   },
 
-  onStart: async function ({ api, event, args }) {
-    try {
-      if (!args.length) {
-        return api.sendMessage(
-          "⚠️ Uꜱᴇ:\n• age 2007\n• age 01/05/2007\n• age 3 May 2007\n• age 3/may/2007",
-          event.threadID
-        );
-      }
+  onStart: async function ({ api, event, args, usersData }) {
+    const { threadID, messageID, senderID } = event;
 
-      let input = args.join(" ").trim();
-      let day, month, year;
-
-      const monthMap = {
-        jan:1,january:1,feb:2,february:2,mar:3,march:3,
-        apr:4,april:4,may:5,jun:6,june:6,
-        jul:7,july:7,aug:8,august:8,
-        sep:9,september:9,oct:10,october:10,
-        nov:11,november:11,dec:12,december:12
-      };
-
-      // YYYY
-      if (/^\d{4}$/.test(input)) {
-        day = 1; month = 1; year = Number(input);
-      }
-
-      // DD/MM/YYYY
-      else if (/^\d{1,2}\/\d{1,2}\/\d{2,4}$/.test(input)) {
-        const p = input.split("/");
-        day = +p[0];
-        month = +p[1];
-        year = +p[2];
-        if (year < 100) year += 2000;
-      }
-
-      // 3 May 2007
-      else if (/^\d{1,2}\s+[a-zA-Z]{3,9}\s+\d{4}$/.test(input)) {
-        const p = input.split(" ");
-        day = +p[0];
-        month = monthMap[p[1].toLowerCase()];
-        year = +p[2];
-      }
-
-      // 3/May/2007
-      else if (/^\d{1,2}\/[a-zA-Z]{3,9}\/\d{4}$/.test(input)) {
-        const p = input.split("/");
-        day = +p[0];
-        month = monthMap[p[1].toLowerCase()];
-        year = +p[2];
-      }
-
-      else {
-        return api.sendMessage(
-          "❌ Fᴏʀᴍᴀᴛ ভুল\n✔ age 2007\n✔ age 01/05/2007\n✔ age 3 May 2007\n✔ age 3/may/2007",
-          event.threadID
-        );
-      }
-
-      if (!day || !month || !year) {
-        return api.sendMessage("❌ Dᴀᴛᴇ পাʀsᴇ হʏ নɪ", event.threadID);
-      }
-
-      const birth = moment.tz(
-        `${year}-${month}-${day}`,
-        "YYYY-MM-DD",
-        "Asia/Dhaka"
-      );
-
-      if (!birth.isValid()) {
-        return api.sendMessage("❌ Iɴᴠᴀʟɪᴅ Dᴀᴛᴇ", event.threadID);
-      }
-
-      const now = moment.tz("Asia/Dhaka");
-      const d = moment.duration(now.diff(birth));
-
-      const y = d.years();
-      const m = d.months();
-      const dy = d.days();
-
-      const totalMonths = y * 12 + m;
-      const totalDays = Math.floor(d.asDays());
-      const totalHours = Math.floor(d.asHours());
-
-      const msg = `━━━━━━━━━━━━━━
-🎂 Sᴍᴀʀᴛ Aɢᴇ Cᴏᴜɴᴛ🎂
-━━━━━━━━━━━━━━
-
-📅 Bɪʀᴛʜᴅᴀʏ: ${String(day).padStart(2,"0")}/${String(month).padStart(2,"0")}/${year}
-🕒 Aɢᴇ: ${y} Yᴇᴀʀs ${m} Mᴏɴᴛʜs ${dy} Dᴀʏs
-
-📌 Tᴏᴛᴀʟ:
-➤ ${totalMonths} Mᴏɴᴛʜs
-➤ ${totalDays} Dᴀʏs
-➤ ${totalHours} Hᴏᴜʀs
-━━━━━━━━━━━━━━`;
-
-      return api.sendMessage(msg, event.threadID);
-
-    } catch (e) {
-      console.error(e);
-      return api.sendMessage("❌ Eʀʀᴏʀ", event.threadID);
+    if (!args[0]) {
+      return api.sendMessage("『 SYSTEM-ERROR 』\n\n➤ Please provide DOB (DD-MM-YYYY)\n➤ Example: .age 18-05-2006", threadID, messageID);
     }
+
+    const birthDate = moment.tz(args[0], "DD-MM-YYYY", true, "Asia/Dhaka");
+    if (!birthDate.isValid()) {
+      return api.sendMessage("❌ FORMAT_INVALID: Use DD-MM-YYYY", threadID, messageID);
+    }
+
+    const now = moment.tz("Asia/Dhaka");
+    const age = moment.duration(now.diff(birthDate));
+
+    const Y = age.years();
+    const M = age.months();
+    const D = age.days();
+    const totalDays = Math.floor(now.diff(birthDate, "days"));
+    const totalSecs = Math.floor(now.diff(birthDate, "seconds"));
+
+    const nextBday = birthDate.clone().year(now.year());
+    if (nextBday.isBefore(now)) nextBday.add(1, 'year');
+    const dLeft = nextBday.diff(now, 'days');
+
+    const ratingArr = ["S-Rank", "A-Rank", "God-Tier", "Legendary", "Elite", "Supreme"];
+    const randomRating = ratingArr[Math.floor(Math.random() * ratingArr.length)];
+
+    const response = 
+      `┌───  [ 𝗔𝗚𝗘 𝗗𝗘𝗧𝗘𝗖𝗧𝗢𝗥 ]  ───\n` +
+      `├──────────────────\n` +
+      `│ ✨ 𝗬𝗲𝗮𝗿𝘀: ${Y} \n` +
+      `│ ✨ 𝗠𝗼𝗻𝘁𝗵𝘀: ${M} \n` +
+      `│ ✨ 𝗗𝗮𝘆𝘀: ${D} \n` +
+      `├──────────────────\n` +
+      `│ 📊 𝗧𝗼𝘁𝗮𝗹 𝗟𝗶𝗳𝗲𝘀𝗽𝗮𝗻:\n` +
+      `│ • Days: ${totalDays.toLocaleString()}\n` +
+      `│ • Second: ${totalSecs.toLocaleString()}\n` +
+      `├──────────────────\n` +
+      `│ 🎯 𝗡𝗲𝘅𝘁 𝗘𝘃𝗲𝗻𝘁: ${dLeft} Days Left\n` +
+      `│ 🎖️ 𝗨𝘀𝗲𝗿 𝗥𝗮𝗻𝗸: ${randomRating}\n` +
+      `└──────────────────\n` ;
+
+    return api.sendMessage(response, threadID, messageID);
   }
 };

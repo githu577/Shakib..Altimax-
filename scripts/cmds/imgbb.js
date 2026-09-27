@@ -1,55 +1,97 @@
 const axios = require("axios");
-const FormData = require("form-data");
 
-const IMGBB_API_KEY = "a0bcf5603cef298e99236e6f0bab90b2";
+const API_CONFIG_URL = "https://raw.githubusercontent.com/goatbotnx/xalmanx210/refs/heads/main/apis.json";
+const API_KEY = "xalman-hub";
+let apiBaseUrl = null;
+let apiConfigRequest = null;
+
+async function getApiBaseUrl() {
+  if (apiBaseUrl) return apiBaseUrl;
+
+  if (!apiConfigRequest) {
+    apiConfigRequest = axios
+      .get(API_CONFIG_URL, { timeout: 15000 })
+      .then(({ data }) => {
+        const baseUrl = data?.[API_KEY];
+
+        if (typeof baseUrl !== "string" || !baseUrl.trim()) {
+          throw new Error(`Missing API key in apis.json: ${API_KEY}`);
+        }
+
+        apiBaseUrl = baseUrl.replace(/\/+$/, "");
+        return apiBaseUrl;
+      })
+      .finally(() => {
+        apiConfigRequest = null;
+      });
+  }
+
+  return apiConfigRequest;
+}
 
 module.exports = {
   config: {
     name: "imgbb",
-    version: "2.0",
-    author: "EryXenX",
+    aliases: ["ibb", "i"],
+    version: "2.5",
+    author: "xalman",
+    countDown: 5,
+    role: 0,
+    shortDescription: "Upload image/gif to ImgBB (supports multiple)",
     category: "tools",
-    shortDescription: "Upload replied image to ImgBB and get link",
-    longDescription: "Reply to an image with this command to upload it to ImgBB and receive a direct link.",
-    guide: "{pn}imgbb (reply to an image)"
+    guide: "{pn} [reply to image/gif]"
   },
 
   onStart: async function ({ api, event }) {
+    const { threadID, messageID, messageReply } = event;
+
+    if (!messageReply || !messageReply.attachments || messageReply.attachments.length === 0) {
+      return api.sendMessage("❌ Please reply to an image or GIF.", threadID, messageID);
+    }
+
+    const attachments = messageReply.attachments.filter(
+      att => att.type === "photo" || att.type === "animated_image"
+    );
+
+    if (attachments.length === 0) {
+      return api.sendMessage("❌ No valid images or GIFs found in the reply.", threadID, messageID);
+    }
+
+    const mediaUrls = attachments.map(att => att.url);
+
+    const waitMsg = await api.sendMessage(`⏳ Uploading ${mediaUrls.length} file(s)...`, threadID, messageID);
+
     try {
-      const attachments = event.messageReply?.attachments;
+      const results = await Promise.all(
+        mediaUrls.map(async (url) => {
+          try {
+            const res = await axios.get(
+              `${await getApiBaseUrl()}/api/ibb?image=${encodeURIComponent(url)}`,
+              { timeout: 15000 }
+            );
+            if (res.data.status) {
+              return { success: true, url: res.data.data.display_url };
+            } else {
+              return { success: false, url: null };
+            }
+          } catch {
+            return { success: false, url: null };
+          }
+        })
+      );
 
-      if (!attachments || attachments.length === 0) {
-        return api.sendMessage("❌ Please reply to an image.", event.threadID, event.messageID);
+      const successful = results.filter(r => r.success);
+
+      if (successful.length === 0) {
+        return api.editMessage("Upload failed.", waitMsg.messageID);
       }
 
-      if (attachments[0].type !== "photo") {
-        return api.sendMessage("❌ Only photo attachments are supported.", event.threadID, event.messageID);
-      }
-
-      const imageUrl = attachments[0].url;
-      const imageResponse = await axios.get(imageUrl, { responseType: "arraybuffer" });
-      const imageBuffer = Buffer.from(imageResponse.data);
-
-      const form = new FormData();
-      form.append("image", imageBuffer.toString("base64"));
-      form.append("key", IMGBB_API_KEY);
-
-      const uploadResponse = await axios.post("https://api.imgbb.com/1/upload", form, {
-        headers: form.getHeaders()
-      });
-
-      const result = uploadResponse.data;
-
-      if (result.success) {
-        const { url } = result.data;
-        return api.sendMessage(url, event.threadID, event.messageID);
-      } else {
-        return api.sendMessage("❌ Upload failed. Please try again.", event.threadID, event.messageID);
-      }
+      const links = successful.map(r => r.url).join("\n");
+      return api.editMessage(links, waitMsg.messageID);
 
     } catch (error) {
-      console.error("ImgBB Error:", error.message);
-      return api.sendMessage("❌ Something went wrong. Please try again.", event.threadID, event.messageID);
+      console.error(error);
+      return api.editMessage("Upload failed.", waitMsg.messageID);
     }
   }
 };

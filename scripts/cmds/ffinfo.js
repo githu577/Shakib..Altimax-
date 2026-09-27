@@ -1,124 +1,125 @@
 const axios = require("axios");
 
+const API_CONFIG_URL = "https://raw.githubusercontent.com/goatbotnx/xalmanx210/refs/heads/main/apis.json";
+const API_KEY = "xalman-hub";
+let apiBaseUrl = null;
+let apiConfigRequest = null;
+
+async function getApiBaseUrl() {
+  if (apiBaseUrl) return apiBaseUrl;
+
+  if (!apiConfigRequest) {
+    apiConfigRequest = axios
+      .get(API_CONFIG_URL, { timeout: 15000 })
+      .then(({ data }) => {
+        const baseUrl = data?.[API_KEY];
+
+        if (typeof baseUrl !== "string" || !baseUrl.trim()) {
+          throw new Error(`Missing API key in apis.json: ${API_KEY}`);
+        }
+
+        apiBaseUrl = baseUrl.replace(/\/+$/, "");
+        return apiBaseUrl;
+      })
+      .finally(() => {
+        apiConfigRequest = null;
+      });
+  }
+
+  return apiConfigRequest;
+}
+
 module.exports = {
   config: {
     name: "ffinfo",
-    aliases: ["freefireinfo", "ffstats"],
-    version: "2.1.0",
-    author: "Dipto ✚ Edit by Mᴏʜᴀᴍᴍᴀᴅ Aᴋᴀsʜ",
+    aliases: ["freefireinfo"],
+    version: "1.5",
+    author: "xalman",
+    countDown: 5,
     role: 0,
-    premium: false,
-    description: "Show complete Free Fire player info with styled output",
-    category: "game",
-    guide: {
-      en: "{p}ffinfo <uid>"
-    }
+    shortDescription: { en: "Detailed Free Fire player profile info" },
+    category: "GAMES",
+    guide: { en: "{pn} <uid>" }
   },
 
-  onStart: async function ({ api, event, args }) {
+  onStart: async function ({ message, args, event, api }) {
+    const uid = args[0];
+
+    if (!uid) {
+      return message.reply("⚠️ Please provide a UID! Example: ffinfo 6348433559");
+    }
+
     try {
-      const uid = args[0];
-      if (!uid) {
-        return api.sendMessage(
-          "⚠️ Please provide a Free Fire UID\n📌 Example: ffinfo 3060644273",
-          event.threadID,
-          event.messageID
-        );
+      api.setMessageReaction("⏳", event.messageID, () => {}, true);
+
+      const res = await axios.get(`${await getApiBaseUrl()}/api/ffinfo`, {
+        params: { uid: uid }
+      });
+
+      const { status, operator, result } = res.data;
+
+      if (status && result) {
+        api.setMessageReaction("✅", event.messageID, () => {}, true);
+
+        const { basicInfo, rankProfileInfo, socialInfo, petInfo, creditScoreInfo, guildInfo, guildOwnerInfo } = result;
+
+        let msg = `╭──〔 𝐅𝐑𝐄𝐄 𝐅𝐈𝐑𝐄 𝐈𝐍𝐅𝐎 〕──╮\n`;
+        msg += `│\n│ 👤 Name: ${basicInfo.name || "N/A"}\n`;
+        msg += `│ 🆔 UID: ${basicInfo.uid || "N/A"}\n`;
+        msg += `│ 🆙 Level: ${basicInfo.level || "N/A"} (Exp: ${basicInfo.exp || "N/A"})\n`;
+        msg += `│ 🌍 Region: ${basicInfo.region || "N/A"}\n`;
+        msg += `│ 👍 Likes: ${basicInfo.likes || "N/A"}\n`;
+        msg += `│ 📅 Created: ${basicInfo.createTime || "N/A"}\n`;
+        msg += `│ 🕒 Last Login: ${basicInfo.lastLogin || "N/A"}\n`;
+        msg += `│ 📦 Version: ${basicInfo.releaseVersion || "N/A"}\n`;
+        msg += `│\n`;
+        msg += `├──〔 𝐑𝐀𝐍𝐊 〕──\n`;
+        msg += `│ 🏆 BR Rank: ${rankProfileInfo?.brMaxRank || "N/A"} (${rankProfileInfo?.brRankPoint || 0}pts)\n`;
+        msg += `│ 🛡️ CS Rank: ${rankProfileInfo?.csMaxRank || "N/A"} (${rankProfileInfo?.csRankPoint || 0}pts)\n`;
+        msg += `│\n`;
+        msg += `├──〔 𝐒𝐎𝐂𝐈𝐀𝐋 〕──\n`;
+        msg += `│ 🌐 Language: ${socialInfo?.language || "N/A"}\n`;
+        msg += `│ 📝 Bio: ${socialInfo?.signature || "N/A"}\n`;
+        msg += `│\n`;
+        msg += `├──〔 𝐏𝐄𝐓 〕──\n`;
+        msg += `│ 🐶 Pet: ${petInfo?.petId || "N/A"} (Lv. ${petInfo?.petLevel || "N/A"})\n`;
+        msg += `│ ✨ Active: ${petInfo?.isSelected ? "Yes" : "No"}\n`;
+        msg += `│\n`;
+        msg += `├──〔 𝐂𝐑𝐄𝐃𝐈𝐓 〕──\n`;
+        msg += `│ 💯 Score: ${creditScoreInfo?.creditScore || "N/A"}\n`;
+        msg += `│\n`;
+
+        if (guildInfo) {
+          msg += `├──〔 𝐂𝐋𝐀𝐍 〕──\n`;
+          msg += `│ 📝 Name: ${guildInfo.guildName || "N/A"}\n`;
+          msg += `│ 🆔 ID: ${guildInfo.guildId || "N/A"}\n`;
+          msg += `│ 📈 Level: ${guildInfo.guildLevel || "N/A"}\n`;
+          msg += `│ 👥 Members: ${guildInfo.members || 0}/${guildInfo.capacity || 0}\n`;
+          msg += `│\n`;
+        }
+
+        if (guildOwnerInfo) {
+          msg += `├──〔 𝐂𝐋𝐀𝐍 𝐋𝐄𝐀𝐃𝐄𝐑 〕──\n`;
+          msg += `│ 👤 Name: ${guildOwnerInfo.nickname || "N/A"}\n`;
+          msg += `│ 🆔 UID: ${guildOwnerInfo.accountId || "N/A"}\n`;
+          msg += `│ 🆙 Level: ${guildOwnerInfo.level || "N/A"}\n`;
+          msg += `│ 💎 Elite Pass: ${guildOwnerInfo.hasElitePass ? "Yes ✅" : "No ❌"}\n`;
+          msg += `│\n`;
+        }
+
+        msg += `╰─────────────────────\n`;
+        msg += `✨ Operator: ${operator || "xalman"}`;
+
+        return message.reply(msg);
+      } else {
+        api.setMessageReaction("❌", event.messageID, () => {}, true);
+        return message.reply("❌ Error: Could not fetch data from API.");
       }
 
-      const wait = await api.sendMessage(
-        "⏳ Fetching Free Fire player info...",
-        event.threadID
-      );
-
-      const url = `https://ff.mlbbai.com/info/?uid=${uid}`;
-      const res = await axios.get(url);
-      const data = res.data;
-
-      if (!data || !data.basicInfo) {
-        return api.editMessage(
-          "❌ Failed to fetch player data. UID may be invalid.",
-          wait.messageID
-        );
-      }
-
-      const b = data.basicInfo;
-      const clan = data.clanBasicInfo || {};
-      const pet = data.petInfo || {};
-      const social = data.socialInfo || {};
-      const credit = data.creditScoreInfo || {};
-      const cap = data.captainBasicInfo || {};
-
-      const msg = `
-🎮 𝐅ʀᴇᴇ 𝐅ɪʀᴇ 𝐏ʟᴀʏᴇʀ 𝐈ɴꜰᴏ
-━━━━━━━━━━━━━━━━━━
-👤 𝐍ᴀᴍᴇ: ${b.nickname || "N/A"}
-🆔 𝐔ɪᴅ: ${b.accountId || uid}
-🌍 𝐑ᴇɢɪᴏɴ: ${b.region || "N/A"}
-⭐ 𝐋ᴇᴠᴇʟ: ${b.level || "N/A"}
-❤️ 𝐋ɪᴋᴇꜱ: ${b.liked || 0}
-📈 𝐄xᴘ: ${b.exp || 0}
-
-🏆 𝐑ᴀɴᴋ: ${b.rank || "N/A"}
-🎯 𝐑ᴀɴᴋ 𝐏ᴏɪɴᴛꜱ: ${b.rankingPoints || 0}
-⚔️ 𝐂ꜱ 𝐑ᴀɴᴋ: ${b.csRank || "N/A"}
-🎮 𝐂ꜱ 𝐏ᴏɪɴᴛꜱ: ${b.csRankingPoints || 0}
-
-👑 𝐌ᴀx 𝐑ᴀɴᴋ: ${b.maxRank || "N/A"}
-👑 𝐌ᴀx 𝐂ꜱ 𝐑ᴀɴᴋ: ${b.csMaxRank || "N/A"}
-🎟️ 𝐄ʟɪᴛᴇ 𝐏ᴀꜱꜱ: ${b.hasElitePass ? "✅ Yes" : "❌ No"}
-🏅 𝐁ᴀᴅɢᴇꜱ: ${b.badgeCnt || 0}
-
-📅 𝐒ᴇᴀꜱᴏɴ: ${b.seasonId || "N/A"}
-🛠️ 𝐑ᴇʟᴇᴀꜱᴇ: ${b.releaseVersion || "N/A"}
-👁️ 𝐁ʀ 𝐑ᴀɴᴋ 𝐒ʜᴏᴡ: ${b.showBrRank ? "Yes" : "No"}
-👁️ 𝐂ꜱ 𝐑ᴀɴᴋ 𝐒ʜᴏᴡ: ${b.showCsRank ? "Yes" : "No"}
-⏳ 𝐀ᴄᴄᴏᴜɴᴛ 𝐂ʀᴇᴀᴛᴇ: ${new Date(b.createAt * 1000).toLocaleDateString("en-GB")}
-
-🛡️ 𝐆ᴜɪʟᴅ 𝐈ɴꜰᴏ
-━━━━━━━━━━━━━━━━
-🏷️ 𝐆ᴜɪʟᴅ 𝐍ᴀᴍᴇ: ${clan.clanName || "None"}
-🆔 𝐆ᴜɪʟᴅ 𝐈ᴅ: ${clan.clanId || "N/A"}
-📊 𝐆ᴜɪʟᴅ 𝐋ᴇᴠᴇʟ: ${clan.clanLevel || "N/A"}
-👥 𝐌ᴇᴍʙᴇʀꜱ: ${clan.memberNum || 0}/${clan.capacity || 0}
-👑 𝐆ᴜɪʟᴅ 𝐋ᴇᴀᴅᴇʀ: ${cap.nickname || "N/A"} (Lv.${cap.level || "?"})
-
-🐾 𝐏ᴇᴛ 𝐈ɴꜰᴏ
-━━━━━━━━━━━━━━━━
-🐶 𝐍ᴀᴍᴇ: ${pet.name || "None"}
-📈 𝐋ᴇᴠᴇʟ: ${pet.level || "N/A"}
-⭐ 𝐄xᴘ: ${pet.exp || 0}
-🎨 𝐒ᴋɪɴ 𝐈ᴅ: ${pet.skinId || "N/A"}
-
-🌐 𝐒ᴏᴄɪᴀʟ 𝐈ɴꜰᴏ
-━━━━━━━━━━━━━━━━
-🚻 𝐆ᴇɴᴅᴇʀ: ${social.gender?.replace("Gender_", "") || "N/A"}
-🗣️ 𝐋ᴀɴɢᴜᴀɢᴇ: ${social.language?.replace("Language_", "") || "N/A"}
-✍️ 𝐒ɪɢɴᴀᴛᴜʀᴇ:
-${social.signature
-  ? social.signature.replace(/\[B]|\[C]|\[ff[0-9a-f]+]/g, "")
-  : "None"}
-
-🛡️ 𝐂ʀᴇᴅɪᴛ 𝐒ᴄᴏʀᴇ
-━━━━━━━━━━━━━━━━
-💯 𝐒ᴄᴏʀᴇ: ${credit.creditScore || "N/A"}
-🎁 𝐑ᴇᴡᴀʀᴅ: ${credit.rewardState?.replace("REWARD_STATE_", "") || "N/A"}
-📆 𝐏ᴇʀɪᴏᴅ 𝐄ɴᴅ: ${
-        credit.periodicSummaryEndTime
-          ? new Date(credit.periodicSummaryEndTime * 1000).toLocaleDateString("en-GB")
-          : "N/A"
-      }
-
-✨ Powered by 𝐌ᴏʜᴀᴍᴍᴀᴅ Aᴋᴀsʜ
-`;
-
-      await api.editMessage(msg, wait.messageID);
-    } catch (err) {
-      api.sendMessage(
-        `❌ Error: ${err.message}`,
-        event.threadID,
-        event.messageID
-      );
+    } catch (error) {
+      console.error("FF Info Error:", error);
+      api.setMessageReaction("⚠️", event.messageID, () => {}, true);
+      return message.reply("❌ API Server Error. Please check your endpoint.");
     }
   }
 };

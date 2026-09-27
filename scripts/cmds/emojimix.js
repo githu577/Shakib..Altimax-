@@ -1,67 +1,74 @@
-const fs = require("fs-extra");
 const axios = require("axios");
-const path = require("path");
+
+const API_CONFIG_URL = "https://raw.githubusercontent.com/goatbotnx/xalmanx210/refs/heads/main/apis.json";
+const API_KEY = "xalman-hub";
+let apiBaseUrl = null;
+let apiConfigRequest = null;
+
+async function getApiBaseUrl() {
+  if (apiBaseUrl) return apiBaseUrl;
+
+  if (!apiConfigRequest) {
+    apiConfigRequest = axios
+      .get(API_CONFIG_URL, { timeout: 15000 })
+      .then(({ data }) => {
+        const baseUrl = data?.[API_KEY];
+
+        if (typeof baseUrl !== "string" || !baseUrl.trim()) {
+          throw new Error(`Missing API key in apis.json: ${API_KEY}`);
+        }
+
+        apiBaseUrl = baseUrl.replace(/\/+$/, "");
+        return apiBaseUrl;
+      })
+      .finally(() => {
+        apiConfigRequest = null;
+      });
+  }
+
+  return apiConfigRequest;
+}
 
 module.exports = {
   config: {
     name: "emojimix",
     aliases: ["mix"],
-    version: "1.0.1",
-    author: "Shaon Ahmed",
+    version: "1.0.0",
+    author: "xalman",
+    countDown: 5,
     role: 0,
-    shortDescription: {
-      en: "Mix two emojis"
-    },
-    longDescription: {
-      en: "Mix two emojis into one image"
-    },
-    category: "fun",
-    guide: {
-      en: "{p}mix 😄 😍"
-    }
+    shortDescription: "Mix two emojis into one image",
+    category: "FUN & SOCIAL",
+    guide: "{pn} [emoji1] [emoji2]"
   },
 
   onStart: async function ({ api, event, args }) {
     const { threadID, messageID } = event;
+    const API_URL = `${await getApiBaseUrl()}/api/emojimix`;
 
     if (args.length < 2) {
-      return api.sendMessage(
-        `❌ Wrong format!\n✅ Use: ${global.GoatBot.config.prefix}mix 😄 😍`,
-        threadID,
-        messageID
-      );
+      return api.sendMessage("╭─❍\n│ Usage: {pn} 🥺 🙏\n╰───────────⟡", threadID, messageID);
     }
 
     const emoji1 = args[0];
     const emoji2 = args[1];
 
-    const cachePath = path.join(__dirname, "cache", `emojimix_${Date.now()}.png`);
+    api.setMessageReaction("🎨", messageID, () => {}, true);
 
     try {
-      const url = encodeURI(
-        `https://web-api-delta.vercel.app/emojimix?emoji1=${emoji1}&emoji2=${emoji2}`
-      );
+      const res = await axios.get(`${API_URL}?emoji1=${encodeURIComponent(emoji1)}&emoji2=${encodeURIComponent(emoji2)}`, {
+        responseType: 'stream'
+      });
 
-      const res = await axios.get(url, { responseType: "arraybuffer" });
-      fs.writeFileSync(cachePath, res.data);
-
-      await api.sendMessage(
-        {
-          body: `✨ Emoji Mix Result`,
-          attachment: fs.createReadStream(cachePath)
-        },
-        threadID,
-        messageID
-      );
-
-      fs.unlinkSync(cachePath);
+      api.setMessageReaction("✅", messageID, () => {}, true);
+      return api.sendMessage({
+        body: "❖ 𝗘𝗠𝗢𝗝𝗜-𝗠𝗜𝗫 ❖\n━━━━━━━━━━━━━━━━━━",
+        attachment: res.data
+      }, threadID, messageID);
 
     } catch (error) {
-      return api.sendMessage(
-        `❌ Can't mix ${emoji1} and ${emoji2}`,
-        threadID,
-        messageID
-      );
+      api.setMessageReaction("❌", messageID, () => {}, true);
+      return api.sendMessage("✕ These emojis cannot be mixed!", threadID, messageID);
     }
   }
 };

@@ -1,40 +1,37 @@
-exports.config = {
-  name: "fork",
-  version: "1.0.0",
-  author: "EryXenX",
-  countDown: 0,
-  role: 0,
-  shortDescription: "Fork Link",
-  longDescription: "Responds with GitHub repo link when 'fork' or 'repository' is mentioned. Cooldown: 10 seconds.",
-  category: "system",
-  guide: {
-    en: "Type 'fork' or 'repository'"
-  }
-};
+module.exports = {
+  config: {
+    name: "fork",
+    version: "4.0",
+    author: "xalman",
+    countDown: 5,
+    role: 0,
+    shortDescription: "Show github repository link ",
+    category: "utility",
+    guide: {
+      en: "{p}fork"
+    }
+  },
 
-const last = {};
-const cool = 10000;
+  langs: {
+    en: {
+      current: `📌 𝐆𝐎𝐀𝐓-𝐁𝐎𝐓
+━━━━━━━━━━━━━━━━━━━━━━━━
+👑 𝐜𝐨𝐧𝐭𝐫𝐢𝐛𝐮𝐭𝐨𝐫 : NΞGΛTIVΞ XΛLMΛN
+🔗 𝐫𝐞𝐩𝐨𝐬𝐢𝐭𝐨𝐫𝐲      : %1
+💎 𝐬𝐭𝐚𝐭𝐮𝐬   : 𝐚𝐥𝐰𝐚𝐲𝐬 𝐮𝐩𝐝𝐚𝐭𝐢𝐧𝐠
+━━━━━━━━━━━━━━━━━━━━━━━━`
+    }
+  },
 
-exports.onStart = async function(){};
+  onStart: async function ({ message, getLang }) {
+    const link = "https://github.com/goatbotnx/GOAT-BOT-UPDATED";
+    return message.reply(getLang("current", link));
+  },
 
-exports.onChat = async function({event: z, api: y}){
-  const t = z.threadID;
-  const n = Date.now();
-  if(last[t] && n - last[t] < cool) return;
-
-  const m = (z.body || "").toLowerCase().trim();
-  if(!m) return;
-
-  const fork = m.includes("fork") || m.includes("repository");
-
-  if(fork){
-    y.sendMessage(
-`🔗𝗚𝗶𝘁𝗛𝘂𝗯 𝗙𝗼𝗿𝗸 𝗟𝗶𝗻𝗸:
-fork লাগলে বস সাকিব ভাইয়া কে মেসেজ দেও 😑😂 whatapp 01322418218`,
-      t,
-      z.messageID
-    );
-
-    last[t] = n;
+  onChat: async function ({ message, getLang, event }) {
+    if (event.body && event.body.toLowerCase() === "fork") {
+      const link = "https://github.com/goatbotnx/GOAT-BOT-UPDATED";
+      return message.reply(getLang("current", link));
+    }
   }
 };
