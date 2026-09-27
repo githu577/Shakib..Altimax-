@@ -1,42 +1,81 @@
+const axios = require("axios");
 const fs = require("fs-extra");
 const path = require("path");
-const axios = require("axios");
 
 module.exports = {
-  config: {
-    name: "say",
-    version: "2.0.0",
-    author: "MOHAMMAD AKASH",
-    countDown: 5,
-    role: 0,
-    shortDescription: "Google TTS দিয়ে ভয়েসে টেক্সট বলা",
-    longDescription: "যেকোনো টেক্সটকে বাংলায় Google Translate এর ভয়েসে রূপান্তর করে পাঠাবে।",
-    category: "media",
-    guide: {
-      en: "{p}say <text>"
-    }
-  },
+	config: {
+		name: "say",
+		version: "4.0",
+		author: "xalman",
+		countDown: 5,
+		role: 0,
+		shortDescription: "Reply supported TTS",
+		category: "TTS"
+	},
 
-  onStart: async function ({ api, event, args }) {
-    try {
-      const text = args.join(" ") || (event.messageReply?.body ?? null);
-      if (!text) return api.sendMessage("❌ দয়া করে কিছু লিখুন যেটা ভয়েসে বলতে হবে।", event.threadID, event.messageID);
+	onStart: async function ({ message, args, event }) {
 
-      const filePath = path.join(__dirname, "cache", `${event.senderID}.mp3`);
-      const url = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(text)}&tl=bn&client=tw-ob`;
+		let text;
 
-      // 🔽 MP3 ফাইল ডাউনলোড
-      const response = await axios.get(url, { responseType: "arraybuffer" });
-      fs.writeFileSync(filePath, Buffer.from(response.data, "utf-8"));
+		if (event.type === "message_reply" && event.messageReply.body) {
+			text = event.messageReply.body;
+		}
+		else if (args[0]) {
+			text = args.join(" ");
+		}
+		else {
+			return message.reply("⚠️ Please enter text or reply to a message.");
+		}
 
-      // 🎧 পাঠানো
-      await api.sendMessage({ attachment: fs.createReadStream(filePath) }, event.threadID, () => {
-        fs.unlinkSync(filePath); // 🧹 ফাইল মুছে ফেলা
-      });
+		const maxLength = 180;
+		const parts = [];
+		const cacheDir = path.join(__dirname, "cache");
 
-    } catch (error) {
-      console.error("Say command error:", error);
-      api.sendMessage("❌ কিছু সমস্যা হয়েছে। পরে আবার চেষ্টা করুন!", event.threadID);
-    }
-  }
+		for (let i = 0; i < text.length; i += maxLength) {
+			parts.push(text.substring(i, i + maxLength));
+		}
+
+		const attachments = [];
+		const filePaths = [];
+
+		try {
+			await fs.ensureDir(cacheDir);
+
+			for (let i = 0; i < parts.length; i++) {
+				const encoded = encodeURIComponent(parts[i]);
+				const url = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encoded}&tl=bn&client=tw-ob`;
+
+				const filePath = path.join(cacheDir, `say_${i}_${Date.now()}.mp3`);
+				filePaths.push(filePath);
+
+				const response = await axios({
+					url,
+					method: "GET",
+					responseType: "stream"
+				});
+
+				const writer = fs.createWriteStream(filePath);
+				response.data.pipe(writer);
+
+				await new Promise((resolve) => writer.on("finish", resolve));
+
+				attachments.push(fs.createReadStream(filePath));
+			}
+
+			await message.reply({
+				body: `🔊 Voice generated (${parts.length} parts)`,
+				attachment: attachments
+			});
+
+			setTimeout(() => {
+				filePaths.forEach(file => {
+					if (fs.existsSync(file)) fs.unlinkSync(file);
+				});
+			}, 5000);
+
+		} catch (err) {
+			console.log(err);
+			return message.reply("❌ Failed to generate voice.");
+		}
+	}
 };

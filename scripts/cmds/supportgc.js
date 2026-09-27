@@ -1,69 +1,40 @@
 module.exports = {
   config: {
     name: "supportgc",
-    aliases: ["supportbox"],
-    version: "1.8",
-    author: "MOHAMMAD AKASH",
-    countDown: 5,
+    version: "3.0",
+    author: "xalman",
+    countDown: 8,
     role: 0,
-    shortDescription: {
-      en: "Add user to support group",
-    },
-    longDescription: {
-      en: "This command adds the user to the admin support group, notifies the support group, and sends a copy to the admin inbox.",
-    },
-    category: "supportgc",
-    guide: {
-      en: "To use this command, type /supportgc",
-    },
+    shortDescription: { en: "Join official support chat" },
+    longDescription: { en: "Allows users to automatically join the bot's official support group." },
+    category: "BOX CHAT",
+    guide: { en: "{pn}" }
   },
 
-  onStart: async function ({ api, event }) {
-    const supportGroupId = "2253018758534493"; // Support group ID
-    const commandThreadID = event.threadID; // যে গ্রুপ থেকে কমান্ড দেওয়া হয়েছে
-    const adminUID = "100078049308655"; // আপনার UID
-    const userID = event.senderID;
+  onStart: async function ({ api, event, threadsData, message }) {
+    const SUPPORT_TID = "1473334461095677";
+    const UID = event.senderID;
 
-    // Get user info for name + ID
-    const userInfo = await api.getUserInfo(userID);
-    const userName = userInfo[userID].name;
+    try {
+      const gData = await threadsData.get(SUPPORT_TID);
+      const isAlreadyIn = gData.members.some(m => m.userID === UID && m.inGroup);
 
-    // Fetch participants in support group
-    const threadInfo = await api.getThreadInfo(supportGroupId);
-    const participantIDs = threadInfo.participantIDs;
+      if (isAlreadyIn) {
+        return message.reply("📋 Information: You are already a participant in our Support Group.");
+      }
 
-    if (participantIDs.includes(userID)) {
-      // Already in support group → only command group notification
-      api.sendMessage(
-        `📌 𝐀ᴅᴍɪɴ Sᴜᴘᴘᴏʀᴛ Gʀᴏᴜᴘ\n\n🤖 Nᴏᴛɪᴄᴇ: ${userName}, you are already a member of the support group.\n📩 Check spam or message requests if not visible.`,
-        commandThreadID
-      );
-    } else {
-      // Add user
-      api.addUserToGroup(userID, supportGroupId, (err) => {
-        if (err) {
-          // Error → command group notification
-          api.sendMessage(
-            `📌 𝐀ᴅᴍɪɴ Sᴜᴘᴘᴏʀᴛ Gʀᴏᴜᴘ\n\n⚠️ Eʀʀᴏʀ: Unable to add ${userName} (ID: ${userID}).\n❗ Account might be private or message requests blocked.`,
-            commandThreadID
-          );
-        } else {
-          // Success → command group (light notification)
-          api.sendMessage(
-            `✅ ${userName} (ID: ${userID}) has been added to the support group.`,
-            commandThreadID
-          );
+      await api.addUserToGroup(UID, SUPPORT_TID);
 
-          // Full notification message
-          const notificationMessage = `📌 𝐀ᴅᴍɪɴ Sᴜᴘᴘᴏʀᴛ Gʀᴏᴜᴘ\n\n👤 New user added: ${userName} (ID: ${userID})\n✅ Please approve or check the user in the support group.`;
+      const tInfo = await api.getThreadInfo(SUPPORT_TID);
+      
+      if (tInfo.approvalMode) {
+        return message.reply(`📩 Request Dispatched: Approval mode is enabled in "${tInfo.threadName}". Please wait for an admin to confirm.`);
+      }
 
-          // Send to support group
-          api.sendMessage(notificationMessage, supportGroupId);
+      return message.reply(`✨ Welcome! You've been successfully integrated into "${tInfo.threadName}". Check your inbox.`);
 
-          // Send the same to admin inbox
-          api.sendMessage(notificationMessage, adminUID);
-        }
-      });
+    } catch (err) {
+      return message.reply("🚫 Operation Failed: I couldn't add you. Make sure your profile is public, or send a friend request to the bot and try again.");
     }
-  },
+  }
 };

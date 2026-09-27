@@ -1,28 +1,35 @@
 module.exports = {
   config: {
     name: "out",
-    version: "2.0",
-    author: "MOHAMMAD AKASH",
+    aliases: ["out"],
+    version: "2.5",
+    author: "xalman",
     countDown: 5,
-    role: 2,
-    shortDescription: "বটকে গ্রুপ থেকে বের করে দেওয়া",
-    longDescription: "এই কমান্ডের মাধ্যমে বটকে বর্তমান বা নির্দিষ্ট গ্রুপ থেকে বের করে দেওয়া হয়।",
-    category: "owner",
+    role: 1,
+    shortDescription: "Bot will leave group",
+    longDescription: "",
+    category: "BOX CHAT",
     guide: {
-      en: "{pn} [threadID (optional)]",
-    },
+      vi: "{pn} [tid,blank]",
+      en: "{pn} [tid,blank]"
+    }
   },
 
   onStart: async function ({ api, event, args }) {
-    const botID = api.getCurrentUserID();
-    const targetThread = args[0] || event.threadID;
+    let id;
 
-    try {
-      await api.sendMessage("👋 আলবিদা সবাই! আমি এখন গ্রুপ থেকে বের হচ্ছি...", targetThread);
-      await api.removeUserFromGroup(botID, targetThread);
-    } catch (error) {
-      console.error(error);
-      return api.sendMessage("❌ বের হতে পারলাম না! হয়তো আমি অ্যাডমিন না বা কোনো সমস্যা হয়েছে।", event.threadID);
+    if (!args.join(" ")) {
+      id = event.threadID;
+    } else {
+      id = parseInt(args.join(" "));
     }
-  },
+
+    const leaveMessage = `𝐥𝐞𝐟𝐭 𝐟𝐫𝐨𝐦 𝐭𝐡𝐞 𝐠𝐫𝐨𝐮𝐩..!🦆💨`;
+
+    return api.sendMessage(
+      leaveMessage,
+      id,
+      () => api.removeUserFromGroup(api.getCurrentUserID(), id)
+    );
+  }
 };

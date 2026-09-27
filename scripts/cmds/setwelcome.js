@@ -4,15 +4,19 @@ module.exports = {
 	config: {
 		name: "setwelcome",
 		aliases: ["setwc"],
-		version: "1.7",
+		version: "1.6",
 		author: "NTKhang",
 		countDown: 5,
 		role: 1,
-		description: {
+		shortDescription: {
+			vi: "Chỉnh sửa nội dung tin nhắn chào mừng",
+			en: "Edit welcome message content"
+		},
+		longDescription: {
 			vi: "Chỉnh sửa nội dung tin nhắn chào mừng thành viên mới tham gia vào nhóm chat của bạn",
 			en: "Edit welcome message content when new member join your group chat"
 		},
-		category: "custom",
+		category: "OWNER",
 		guide: {
 			vi: {
 				body: "   {pn} text [<nội dung> | reset]: chỉnh sửa nội dung văn bản hoặc reset về mặc định, với những shortcut có sẵn:"
@@ -39,7 +43,7 @@ module.exports = {
 					+ "\n  + {multiple}: you || you guys"
 					+ "\n  + {session}:  session in day"
 					+ "\n\n   Example:"
-					+ "\n    {pn} text Hello {userName}, welcome to {boxName}, have a nice day {multiple}"
+					+ "\n    {pn} Hello ${userName}! Welcome to ${threadName}\nYou're the ${memLength}th member of this group, please enjoy!❤️🥳️"
 					+ "\n"
 					+ "\n   Reply (phản hồi) or send a message with file with content {pn} file: to add file attachments to welcome message (image, video, audio)"
 					+ "\n\n   Example:"
@@ -55,7 +59,7 @@ module.exports = {
 		vi: {
 			turnedOn: "Đã bật chức năng chào mừng thành viên mới",
 			turnedOff: "Đã tắt chức năng chào mừng thành viên mới",
-			missingContent: "Vui lùng nhập nội dung tin nhắn",
+			missingContent: "Vui lòng nhập nội dung tin nhắn chào mừng",
 			edited: "Đã chỉnh sửa nội dung tin nhắn chào mừng của nhóm bạn thành: %1",
 			reseted: "Đã reset nội dung tin nhắn chào mừng",
 			noFile: "Không có tệp đính kèm tin nhắn chào mừng nào để xóa",
@@ -71,52 +75,8 @@ module.exports = {
 			reseted: "Reseted welcome message content",
 			noFile: "No file attachments to delete",
 			resetedFile: "Reseted file attachments successfully",
-			missingFile: "Please reply this message with image/video/audio file",
+			missingFile: "Please reply to this message with an image/video/audio file",
 			addedFile: "Added %1 file attachments to your group welcome message"
-		},
-		tl: {
-			turnedOn: "Na-on ang welcome message",
-			turnedOff: "Na-off ang welcome message",
-			missingContent: "Mangyaring ilagay ang nilalaman ng welcome message",
-			edited: "Na-edit ang nilalaman ng welcome message ng iyong grupo sa: %1",
-			reseted: "Na-reset ang nilalaman ng welcome message",
-			noFile: "Walang file attachments na tatanggalin",
-			resetedFile: "Matagumpay na na-reset ang mga file attachment",
-			missingFile: "Mangyaring sumagot sa mensaheng ito na may image/video/audio file",
-			addedFile: "Naidagdag ang %1 file attachment sa welcome message ng iyong grupo"
-		},
-		hi: {
-			turnedOn: "Welcome message on ho gaya",
-			turnedOff: "Welcome message off ho gaya",
-			missingContent: "Kripya welcome message ka content dalein",
-			edited: "Aapke group ka welcome message content badal diya gaya: %1",
-			reseted: "Welcome message content reset ho gaya",
-			noFile: "Delete karne ke liye koi file attachment nahi hai",
-			resetedFile: "File attachments successfully reset ho gaye",
-			missingFile: "Kripya is message ka reply image/video/audio file ke saath karein",
-			addedFile: "Aapke group ke welcome message mein %1 file attachment add kar diye gaye"
-		},
-		ar: {
-			turnedOn: "تم تفعيل رسالة الترحيب",
-			turnedOff: "تم إيقاف رسالة الترحيب",
-			missingContent: "الرجاء إدخال محتوى رسالة الترحيب",
-			edited: "تم تعديل محتوى رسالة الترحيب لمجموعتك إلى: %1",
-			reseted: "تمت إعادة تعيين محتوى رسالة الترحيب",
-			noFile: "لا توجد مرفقات لحذفها",
-			resetedFile: "تمت إعادة تعيين المرفقات بنجاح",
-			missingFile: "الرجاء الرد على هذه الرسالة بملف صورة/فيديو/صوت",
-			addedFile: "تمت إضافة %1 مرفق إلى رسالة الترحيب في مجموعتك"
-		},
-		bn: {
-			turnedOn: "Welcome message চালু হয়েছে",
-			turnedOff: "Welcome message বন্ধ হয়েছে",
-			missingContent: "অনুগ্রহ করে welcome message এর বিষয়বস্তু লিখুন",
-			edited: "আপনার group এর welcome message পরিবর্তন হয়েছে: %1",
-			reseted: "Welcome message রিসেট হয়েছে",
-			noFile: "মুছার জন্য কোনো file attachment নেই",
-			resetedFile: "File attachments সফলভাবে রিসেট হয়েছে",
-			missingFile: "অনুগ্রহ করে এই message এ image/video/audio file সহ reply করুন",
-			addedFile: "আপনার group এর welcome message এ %1 টি file attachment যোগ করা হয়েছে"
 		}
 	},
 

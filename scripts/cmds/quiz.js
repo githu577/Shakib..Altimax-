@@ -1,142 +1,194 @@
 const axios = require("axios");
 
-module.exports.config = {
-  name: "quiz",
-  version: "2.0",
-  author: "EryXenX",
-  role: 0,
-  category: "economy",
-  countDown: 10,
-  shortDescription: "Answer quiz questions to earn money",
-  guide: "{prefix}quiz"
+const API_CONFIG_URL = "https://raw.githubusercontent.com/goatbotnx/xalmanx210/refs/heads/main/apis.json";
+const API_KEY = "xalman-hub";
+let apiBaseUrl = null;
+let apiConfigRequest = null;
+
+async function getApiBaseUrl() {
+  if (apiBaseUrl) return apiBaseUrl;
+
+  if (!apiConfigRequest) {
+    apiConfigRequest = axios
+      .get(API_CONFIG_URL, { timeout: 15000 })
+      .then(({ data }) => {
+        const baseUrl = data?.[API_KEY];
+
+        if (typeof baseUrl !== "string" || !baseUrl.trim()) {
+          throw new Error(`Missing API key in apis.json: ${API_KEY}`);
+        }
+
+        apiBaseUrl = baseUrl.replace(/\/+$/, "");
+        return apiBaseUrl;
+      })
+      .finally(() => {
+        apiConfigRequest = null;
+      });
+  }
+
+  return apiConfigRequest;
+}
+
+const CATEGORY_ALIASES = {
+  bn: "bn",
+  bangla: "bn",
+  bengali: "bn",
+  en: "en",
+  english: "en",
+  math: "math",
+  maths: "math",
+  mathematics: "math"
 };
 
-const usedQuestions = new Map();
+const CATEGORY_LABELS = {
+  bn: "🇧🇩 Bangla",
+  en: "🇬🇧 English",
+  math: "🧮 Math"
+};
 
-function decodeHTML(str) {
-  return str
-    .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&quot;/g, '"')
-    .replace(/&#039;/g, "'")
-    .replace(/&ldquo;/g, "\u201C")
-    .replace(/&rdquo;/g, "\u201D")
-    .replace(/&lsquo;/g, "\u2018")
-    .replace(/&rsquo;/g, "\u2019");
+function normalizeCategory(input) {
+  if (!input) return null;
+  const key = String(input).toLowerCase().trim();
+  return CATEGORY_ALIASES[key] || null;
 }
 
-function shuffle(arr) {
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
-  return arr;
-}
+module.exports = {
+  config: {
+    name: "quiz",
+    aliases: ["qz"],
+    version: "8.0",
+    author: "xalman",
+    countDown: 5,
+    role: 0,
+    description: "Play a random quiz with elegant design and automatic clean-up",
+    category: "GAMES",
+    guide: "{pn} : random bangla quiz\n{pn} bn / bangla : bangla quiz\n{pn} en / english : english quiz\n{pn} math : math quiz\n{pn} list : total questions (all categories)\n{pn} list <category> : total questions in a category"
+  },
 
-async function fetchQuestion(senderID) {
-  const used = usedQuestions.get(senderID) || new Set();
+  onStart: async function ({ event, message, args, api }) {
+    const { senderID } = event;
+    const BASE_URL = `${await getApiBaseUrl()}/api/quiz`;
 
-  for (let attempt = 0; attempt < 5; attempt++) {
-    const res = await axios.get("https://opentdb.com/api.php?amount=5&type=multiple");
-    const results = res.data?.results;
-    if (!results) continue;
+    if (args[0] === "list" || args[0] === "total") {
+      const rawCategory = args[1];
+      const category = normalizeCategory(rawCategory);
 
-    for (const item of results) {
-      const question = decodeHTML(item.question);
-      if (used.has(question)) continue;
-
-      const correct = decodeHTML(item.correct_answer);
-      const wrong = item.incorrect_answers.map(decodeHTML);
-      const allOptions = shuffle([correct, ...wrong]);
-      const labels = ["A", "B", "C", "D"];
-      const answerLabel = labels[allOptions.indexOf(correct)];
-      const options = allOptions.map((opt, i) => `${labels[i]}. ${opt}`);
-
-      used.add(question);
-      if (used.size > 200) {
-        const first = used.values().next().value;
-        used.delete(first);
+      if (rawCategory && !category) {
+        return message.reply(
+          `❌ Invalid category: "${rawCategory}"\n✅ Valid categories: bn/bangla, en/english, math`
+        );
       }
-      usedQuestions.set(senderID, used);
 
-      return { question, options, answer: answerLabel };
+      try {
+        const url = category
+          ? `${BASE_URL}?list=true&category=${category}`
+          : `${BASE_URL}?list=true`;
+        const res = await axios.get(url);
+        const data = res.data;
+
+        let listMsg;
+        if (data.by_category) {
+          listMsg =
+            `📊 𝗤𝗨𝗜𝗭 𝗦𝗧𝗔𝗧𝗜𝗦𝗧𝗜𝗖𝗦\n━━━━━━━━━━━━━━━━━━━━━━\n` +
+            `📝 Total Questions : ${data.total_questions}\n` +
+            `🇧🇩 Bangla : ${data.by_category.bn}\n` +
+            `🇬🇧 English : ${data.by_category.en}\n` +
+            `🧮 Math : ${data.by_category.math}\n` +
+            `👤 Database Author : ${data.author}\n` +
+            `🟢 System Status   : Active\n━━━━━━━━━━━━━━━━━━━━━━`;
+        } else {
+          listMsg =
+            `📊 𝗤𝗨𝗜𝗭 𝗦𝗧𝗔𝗧𝗜𝗦𝗧𝗜𝗖𝗦 (${data.category})\n━━━━━━━━━━━━━━━━━━━━━━\n` +
+            `📝 Total Questions : ${data.total_questions}\n` +
+            `👤 Database Author : ${data.author}\n` +
+            `🟢 System Status   : Active\n━━━━━━━━━━━━━━━━━━━━━━`;
+        }
+        return message.reply(listMsg);
+      } catch (e) {
+        return message.reply("❌ Unable to fetch quiz database information.");
+      }
     }
-  }
 
-  return null;
-}
+    const rawCategory = args[0];
+    const requestedCategory = normalizeCategory(rawCategory);
 
-module.exports.onStart = async function ({ api, event, usersData }) {
-  const { senderID, threadID, messageID } = event;
+    if (rawCategory && !requestedCategory) {
+      return message.reply(
+        `❌ Invalid category: "${rawCategory}"\n✅ Valid categories: bn/bangla, en/english, math\n\n` +
+        `Usage:\n${this.config.guide.replace(/{pn}/g, this.config.name)}`
+      );
+    }
 
-  let quizData;
-  try {
-    quizData = await fetchQuestion(senderID);
-  } catch (e) {
-    return api.sendMessage("❌ Failed to fetch question. Try again later.", threadID, messageID);
-  }
+    try {
+      const url = requestedCategory ? `${BASE_URL}?category=${requestedCategory}` : BASE_URL;
+      const res = await axios.get(url);
+      const quiz = res.data;
+      if (!quiz.status) return message.reply("❌ API returned an invalid response.");
 
-  if (!quizData)
-    return api.sendMessage("❌ Could not get a new question. Try again later.", threadID, messageID);
+      const categoryLabel = CATEGORY_LABELS[quiz.category] || quiz.category;
 
-  const msg =
-`📝 QUIZ TIME!
+      const labels = ["A", "B", "C", "D"];
+      let optionsText = "";
+      quiz.options.forEach((opt, index) => {
+        optionsText += `🔠 [ ${labels[index]} ] : ${opt}\n`;
+      });
 
-❓ ${quizData.question}
+      const msgText = `🧠 𝗤𝗨𝗜𝗭 𝗖𝗛𝗔𝗟𝗟𝗘𝗡𝗚𝗘 (${categoryLabel})\n━━━━━━━━━━━━━━━━━━━━━━\n❓ 𝗤𝗨𝗘𝗦𝗧𝗜𝗢𝗡:\n${quiz.question}\n\n📝 𝗢𝗣𝗧𝗜𝗢𝗡𝗦:\n${optionsText}\n━━━━━━━━━━━━━━━━━━━━━━\n⏳ You have 60 seconds to reply with the correct letter (A, B, C, or D).\n`;
 
-${quizData.options.join("\n")}
+      return message.reply(msgText, (err, info) => {
+        if (err) return;
 
-⏱ Reply with A, B, C or D
-✅ Correct → +500$
-❌ Wrong → -50$`;
+        global.GoatBot.onReply.set(info.messageID, {
+          commandName: this.config.name,
+          messageID: info.messageID,
+          author: senderID,
+          correctAnswer: quiz.answer,
+          correctText: quiz.correct_text
+        });
 
-  api.sendMessage(msg, threadID, (err, info) => {
-    if (err) return;
-    global.GoatBot.onReply.set(info.messageID, {
-      commandName: "quiz",
-      messageID: info.messageID,
-      answer: quizData.answer,
-      senderID
-    });
+        setTimeout(() => {
+          if (global.GoatBot.onReply.has(info.messageID)) {
+            api.unsendMessage(info.messageID);
+            global.GoatBot.onReply.delete(info.messageID);
+          }
+        }, 60000);
+      });
 
-    setTimeout(() => {
-      if (global.GoatBot.onReply.has(info.messageID)) {
-        global.GoatBot.onReply.delete(info.messageID);
-        api.unsendMessage(info.messageID);
+    } catch (e) {
+      return message.reply("❌ Unable to establish a connection with the quiz server.");
+    }
+  },
+
+  onReply: async function ({ event, Reply, message, usersData, api }) {
+    const { senderID, body } = event;
+
+    if (senderID !== Reply.author) {
+      return;
+    }
+
+    const userAnswer = body.trim().toUpperCase();
+    const validOptions = ["A", "B", "C", "D"];
+    if (!validOptions.includes(userAnswer)) return;
+
+    try {
+      api.unsendMessage(Reply.messageID);
+      let resultMsg = "";
+      if (userAnswer === Reply.correctAnswer) {
+        const reward = 500;
+        const userData = await usersData.get(senderID);
+        const currentMoney = parseInt(userData.money || 0);
+        await usersData.set(senderID, { money: currentMoney + reward });
+        resultMsg = `🎉 𝗖𝗢𝗥𝗥𝗘𝗖𝗧 𝗔𝗡𝗦𝗪𝗘𝗥!\n━━━━━━━━━━━━━━━━━━━━━━\n✅ You chose [ ${userAnswer} ].\n\n📖 Explanation:\n${Reply.correctText}\n\n💰 Reward: +${reward.toLocaleString()} ৳`;
+      } else {
+        resultMsg = `😞 𝗪𝗥𝗢𝗡𝗚 𝗔𝗡𝗦𝗪𝗘𝗥!\n━━━━━━━━━━━━━━━━━━━━━━\n❌ Your choice was [ ${userAnswer} ].\n\n📖 The correct answer is:\n[ ${Reply.correctAnswer} ] : ${Reply.correctText}`;
       }
-    }, 60000);
-  }, messageID);
-};
 
-module.exports.onReply = async function ({ api, event, usersData, Reply }) {
-  const { senderID, threadID, messageID, body } = event;
-  const { answer } = Reply;
+      message.reply(resultMsg);
+      global.GoatBot.onReply.delete(Reply.messageID);
 
-  const userAnswer = body.trim().toUpperCase();
-
-  if (!["A", "B", "C", "D"].includes(userAnswer))
-    return api.sendMessage("⚠ Please reply with only A, B, C or D.", threadID, messageID);
-
-  global.GoatBot.onReply.delete(Reply.messageID);
-
-  const userData = await usersData.get(senderID);
-  let balance = userData?.data?.money ?? 100;
-
-  if (userAnswer === answer) {
-    balance += 500;
-    await usersData.set(senderID, { data: { ...userData.data, money: balance } });
-    api.sendMessage(
-      `✅ Correct! The answer was ${answer}\n💵 Won +500$\n💰 Balance: ${balance}$`,
-      threadID, messageID
-    );
-  } else {
-    balance = Math.max(0, balance - 50);
-    await usersData.set(senderID, { data: { ...userData.data, money: balance } });
-    api.unsendMessage(Reply.messageID);
-    api.sendMessage(
-      `❌ Wrong! The correct answer was ${answer}\n💸 Lost -50$\n💰 Balance: ${balance}$`,
-      threadID, messageID
-    );
+    } catch (e) {
+      console.error(e);
+      return message.reply("❌ An unexpected error occurred while processing your answer.");
+    }
   }
 };
